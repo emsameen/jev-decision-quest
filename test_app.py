@@ -1,7 +1,6 @@
 """Exercise Gradio's session-state flow without a running Ollama server."""
 
 import unittest
-from itertools import product
 from unittest.mock import Mock, patch
 
 from gradio.state_holder import SessionState
@@ -10,9 +9,9 @@ import gradio as gr
 
 from decision_quest import config, game as handlers
 from decision_quest.ui import create_app
-from decision_quest.localization import catalog, localized_scene
-from decision_quest.ollama import build_payload, call_nimble
-from decision_quest.presentation import option_choices, scene_markdown
+from decision_quest.localization import catalog, direction_label, localized_scene
+from decision_quest.ollama import build_payload, call_model
+from decision_quest.presentation import decision_breakdown_html, option_choices, scene_markdown
 from decision_quest.scenes import SCENES
 
 
@@ -33,50 +32,76 @@ class GameFlowTests(unittest.IsolatedAsyncioTestCase):
         return await self.demo.process_api(index, inputs, state=session)
 
     async def test_full_games_and_repeated_clicks(self):
-        for mode, language in product(
-            (config.MODE_PREDICT, config.MODE_DUEL, config.MODE_WATCH), ("en", "ar", "de")
-        ):
-            with self.subTest(mode=mode, language=language), patch.object(
-                handlers, "call_nimble", side_effect=model_result
+        for language in ("en", "ar", "de"):
+            with self.subTest(language=language), patch.object(
+                handlers, "call_model", side_effect=model_result
             ) as model, patch.object(gr, "Info"):
                 session = SessionState(self.demo)
-                await self.event(1, [None, mode, None], session)
+                await self.event(1, [None, None], session)
                 model.assert_not_called()
-                await self.event(0, [mode, language], session)
+                started = await self.event(0, [language], session)
+                self.assertFalse(started["data"][7]["interactive"])
                 for round_index in range(config.ROUNDS):
                     game = session[self.game_state._id]
                     self.assertEqual(game["round"], round_index)
                     self.assertEqual(game["language"], language)
-                    choice = handlers.current_scene(game)["best"]
-                    await self.event(1, [None, mode, choice], session)
+                    scene = localized_scene(handlers.current_scene(game), language)
+                    choice = scene["best"]
+                    enabled = await self.event(3, [choice], session)
+                    self.assertTrue(enabled["data"][0]["interactive"])
+                    result = await self.event(1, [None, choice], session)
                     self.assertTrue(session[self.game_state._id]["resolved"])
-                    self.assertEqual(session[self.game_state._id]["nimble"], round_index + 1)
-                    await self.event(1, [None, mode, choice], session)
+                    self.assertEqual(session[self.game_state._id]["model"], round_index + 1)
+                    self.assertEqual(session[self.game_state._id]["player"], round_index + 1)
+                    self.assertEqual(session[self.game_state._id]["matches"], round_index + 1)
+                    self.assertIn(
+                        f"You chose **{direction_label(choice, language)}**",
+                        result["data"][5],
+                    )
+                    self.assertIn("Fixed-rule answer", result["data"][5])
+                    reasoning = session[self.game_state._id]["debug"][-1]["reasoning"]
+                    self.assertEqual(reasoning["correct_route"], scene["best"])
+                    self.assertEqual(reasoning["explanation"], scene["reason"])
+                    self.assertEqual(reasoning["source"], "fixed game rules")
+                    await self.event(1, [None, choice], session)
                     self.assertEqual(model.call_count, round_index + 1)
-                    await self.event(2, [None, mode], session)
+                    await self.event(2, [None], session)
                     # A duplicate Next click must not skip an unresolved round.
-                    await self.event(2, [None, mode], session)
+                    await self.event(2, [None], session)
                 self.assertEqual(len(session[self.game_state._id]["debug"]), config.ROUNDS)
                 self.assertFalse(session[self.game_state._id]["active"])
-                await self.event(1, [None, mode, choice], session)
+                await self.event(1, [None, choice], session)
                 self.assertEqual(model.call_count, config.ROUNDS)
-                await self.event(0, [mode, language], session)
+                await self.event(0, [language], session)
                 self.assertEqual(session[self.game_state._id]["debug"], [])
-                self.assertEqual(session[self.game_state._id]["nimble"], 0)
+                self.assertEqual(session[self.game_state._id]["model"], 0)
                 self.assertFalse(session[self.game_state._id]["resolved"])
 
     async def test_model_failure_leaves_round_retryable(self):
         session = SessionState(self.demo)
-        await self.event(0, [config.MODE_WATCH, "en"], session)
-        with patch.object(handlers, "call_nimble", side_effect=gr.Error("Offline")):
-            result = await self.event(1, [None, config.MODE_WATCH, None], session)
+        await self.event(0, ["en"], session)
+        choice = handlers.current_scene(session[self.game_state._id])["best"]
+        with patch.object(handlers, "call_model", side_effect=gr.Error("Offline")):
+            result = await self.event(1, [None, choice], session)
             self.assertIn("Offline", result["data"][3])
             self.assertIn("Offline", session[self.game_state._id]["debug"][0]["error"])
+            self.assertIn("reasoning", session[self.game_state._id]["debug"][0])
         self.assertFalse(session[self.game_state._id]["resolved"])
-        self.assertEqual(session[self.game_state._id]["nimble"], 0)
-        with patch.object(handlers, "call_nimble", side_effect=model_result):
-            await self.event(1, [None, config.MODE_WATCH, None], session)
+        self.assertEqual(session[self.game_state._id]["model"], 0)
+        with patch.object(handlers, "call_model", side_effect=model_result):
+                await self.event(1, [None, choice], session)
         self.assertTrue(session[self.game_state._id]["resolved"])
+
+    async def test_asking_without_a_route_is_ignored(self):
+        session = SessionState(self.demo)
+        await self.event(0, ["en"], session)
+        with patch.object(gr, "Info") as info, patch.object(
+            handlers, "call_model"
+        ) as model:
+            await self.event(1, [None, None], session)
+        info.assert_called_once()
+        model.assert_not_called()
+        self.assertEqual(session[self.game_state._id]["debug"], [])
 
 
 class DebugTests(unittest.TestCase):
@@ -86,7 +111,7 @@ class DebugTests(unittest.TestCase):
         response.json.return_value = result
         record = {}
         with patch("decision_quest.ollama.requests.post", return_value=response) as post:
-            actual, _ = call_nimble(SCENES[0], debug=record)
+            actual, _ = call_model(SCENES[0], debug=record)
         self.assertEqual(actual, result)
         self.assertEqual(record["request"]["json"], post.call_args.kwargs["json"])
         self.assertEqual(record["request"]["url"], post.call_args.args[0])
@@ -103,10 +128,34 @@ class DebugTests(unittest.TestCase):
         record = {}
         with patch("decision_quest.ollama.requests.post", return_value=response):
             with self.assertRaises(gr.Error):
-                call_nimble(SCENES[0], debug=record)
+                call_model(SCENES[0], debug=record)
         self.assertEqual(record["response"], "Model failed")
         self.assertEqual(record["status_code"], 500)
         self.assertIn("500", record["error"])
+
+    def test_decision_breakdown_shows_all_three_question_types(self):
+        answers = {
+            "route": {
+                "type": "choice",
+                "choice": "middle",
+                "probabilities": {"left": 0.1, "middle": 0.8, "right": 0.1},
+                "confidence": 0.5,
+            },
+            "left_hazard": {"type": "noul", "noul": 0.25},
+            "left_risk": {
+                "type": "score",
+                "score": 0.7,
+                "legend": {"0": "Low risk", "1": "Medium risk", "2": "High risk"},
+                "probabilities": {"0": 0.5, "1": 0.3, "2": 0.2},
+            },
+        }
+        rendered = decision_breakdown_html(answers, "middle")
+        for label in ("choice", "noul", "score", "Low risk", "Medium risk", "High risk"):
+            with self.subTest(label=label):
+                self.assertIn(label, rendered)
+        self.assertIn("80.0%", rendered)
+        self.assertIn("25.0%", rendered)
+        self.assertIn("Expected score: <strong>0.70 / 2</strong>", rendered)
 
 
 class LocalizationTests(unittest.TestCase):

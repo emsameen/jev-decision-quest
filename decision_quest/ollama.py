@@ -41,7 +41,7 @@ def build_payload(scene: dict[str, Any]) -> dict[str, Any]:
     return payload
 
 
-def _call_nimble(scene: dict[str, Any], record: dict[str, Any]) -> tuple[dict[str, Any], float]:
+def _call_model(scene: dict[str, Any], record: dict[str, Any]) -> tuple[dict[str, Any], float]:
     """Use the official Jev-style /v1/systemone endpoint; no chat prompting."""
     payload = record["request"]["json"]
     try:
@@ -81,7 +81,7 @@ def _call_nimble(scene: dict[str, Any], record: dict[str, Any]) -> tuple[dict[st
         ) from exc
 
 
-def call_nimble(
+def call_model(
     scene: dict[str, Any], *, debug: dict[str, Any] | None = None
 ) -> tuple[dict[str, Any], float]:
     """Record the actual request, response, and failures for this session."""
@@ -96,7 +96,7 @@ def call_nimble(
     })
     started = time.perf_counter()
     try:
-        return _call_nimble(scene, record)
+        return _call_model(scene, record)
     except Exception as exc:
         record["error"] = str(exc)
         raise
