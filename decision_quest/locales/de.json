@@ -1,0 +1,67 @@
+{
+  "directions": {"left": "Links", "middle": "Mitte", "right": "Rechts"},
+  "questions": {
+    "route": "Welcher der drei Wege ist der sicherste nutzbare Weg, um das Ziel zu erreichen? Berücksichtige nur die angegebenen Fakten.",
+    "left_hazard": "Wird für den LINKEN Weg ausdrücklich eine Gefahr oder ein Hindernis genannt?",
+    "left_risk": "Wie riskant ist der LINKE Weg, wenn du nur seine Beschreibung berücksichtigst?",
+    "risk_criteria": ["Geringes Risiko: eindeutig sicher und nutzbar", "Mittleres Risiko: Sicherheit oder Nutzbarkeit ungewiss", "Hohes Risiko: ausdrücklich gefährlich oder blockiert"]
+  },
+  "scenes": {
+    "flooded_valley": {
+      "title": "🌊 Überflutetes Tal",
+      "goal": "Durchquere das Tal, ohne ins Hochwasser zu geraten oder unsichere Bauwerke zu betreten.",
+      "story": "Starker Regen hat den unteren Teil des Tals überflutet. Vor dir liegen drei ausgeschilderte Wege.",
+      "paths": {"left": "Ausgefranste Hängebrücke mit der Kennzeichnung UNSICHER", "middle": "Stabiler Pfad auf höher gelegenem Gelände oberhalb des Hochwassers", "right": "Überfluteter Fluss, der flach wirkt, aber eine starke Strömung hat"},
+      "reason": "Der höher gelegene Pfad vermeidet sowohl die marode Brücke als auch das Hochwasser."
+    },
+    "space_station": {
+      "title": "🛸 Raumstation",
+      "goal": "Erreiche die Rettungskapsel durch einen passierbaren Korridor mit normalem Luftdruck.",
+      "story": "Ein Alarm ertönt. Die Statusanzeigen der Station zeigen folgende Wege an.",
+      "paths": {"left": "Korridor ohne Luftdruck; Vakuumalarm aktiv", "middle": "Korridor mit normalem Luftdruck, der zur Rettungskapsel führt", "right": "Durchgang durch eine verklemmte Notfallluke blockiert"},
+      "reason": "Nur der mittlere Korridor hat normalen Luftdruck und ist passierbar."
+    },
+    "forest_evacuation": {
+      "title": "🔥 Evakuierung im Wald",
+      "goal": "Erreiche den Evakuierungspunkt, ohne eine aktive Gefahrenzone zu betreten.",
+      "story": "Rauch breitet sich im Wald aus. Offizielle Wegweiser sind sichtbar.",
+      "paths": {"left": "Weg in ein Gebiet mit aktivem Waldbrand", "middle": "Pfad, der an einem Fluss ohne Übergang endet", "right": "Offene, von der Forstverwaltung ausgeschilderte Evakuierungsstraße zur Schutzhütte"},
+      "reason": "Die ausgeschilderte Evakuierungsstraße führt zur Schutzhütte, ohne dass ein Hindernis gemeldet ist."
+    },
+    "clockwork_castle": {
+      "title": "🔑 Uhrwerkburg",
+      "goal": "Hole den Schlüssel, mit dem sich das letzte Tor öffnen lässt.",
+      "story": "Auf einem Schild steht: „Der Schlüssel hängt im Raum mit der Messinguhr.“",
+      "paths": {"left": "Zugänglicher Raum mit einer Messinguhr und einem Schlüssel an der Wand", "middle": "Zugänglicher Raum mit einem leeren Bücherregal", "right": "Verschlossener Raum mit einer Steinstatue"},
+      "reason": "Laut dem Schild befindet sich der Schlüssel im Raum mit der Messinguhr."
+    },
+    "mountain_descent": {
+      "title": "⛰️ Abstieg vom Berg",
+      "goal": "Erreiche das Dorf sicher vor Einbruch der Dunkelheit.",
+      "story": "Das Wetter am Berg ändert sich. Auf deiner Karte ist ein instand gehaltener Abstiegsweg markiert.",
+      "paths": {"left": "Felsvorsprung an einer Steilwand mit Lawinenwarnung", "middle": "Ausgeschilderter, instand gehaltener Abstiegsweg zum Dorf", "right": "Steiler, unmarkierter Grat, der vom Dorf wegführt"},
+      "reason": "Der instand gehaltene Weg ist die ausgeschilderte Route zum Ziel."
+    },
+    "jungle_crossing": {
+      "title": "🦜 Flussüberquerung im Dschungel",
+      "goal": "Überquere den Fluss, ohne ein unnötiges Risiko im Wasser einzugehen.",
+      "story": "Der Fluss hat eine starke Strömung. Eine Hinweistafel bestätigt den Zustand der einzelnen Übergänge.",
+      "paths": {"left": "Geprüfte Fußgängerbrücke mit der Kennzeichnung OFFEN und SICHER", "middle": "Versuch, durch starke Stromschnellen zu schwimmen", "right": "Kleines Floß mit der Kennzeichnung AUSSER BETRIEB wegen eines Lecks"},
+      "reason": "Die geprüfte und freigegebene Fußgängerbrücke ist der sichere Übergang."
+    },
+    "robot_workshop": {
+      "title": "🤖 Roboterwerkstatt",
+      "goal": "Erreiche den Ausgang der Werkstatt und meide gefährliche Maschinen.",
+      "story": "Sicherheitsanzeigen beschreiben drei Gänge.",
+      "paths": {"left": "Gang durch umgestürzte Regale blockiert", "middle": "Gang neben freiliegenden, stromführenden Kabeln", "right": "Freier, geprüfter Gang, der als Fluchtweg ausgeschildert ist"},
+      "reason": "Der freie, geprüfte Fluchtweg vermeidet sowohl den blockierten Gang als auch die elektrische Gefahr."
+    },
+    "volcano_base": {
+      "title": "🌋 Vulkanforschungsstation",
+      "goal": "Erreiche den geschützten Beobachtungsunterstand, ohne eine Gefahrenzone zu durchqueren.",
+      "story": "Ein Bericht zur Vulkanaktivität beschreibt den Zustand der Wege.",
+      "paths": {"left": "Geschützter Tunnel direkt zum Beobachtungsunterstand", "middle": "Pfad durch eine Sperrzone mit aktivem Lavastrom", "right": "Instabiler Hang mit kürzlich aufgetretenem Steinschlag"},
+      "reason": "Der geschützte Tunnel führt zum Unterstand, ohne die genannten Gefahren zu durchqueren."
+    }
+  }
+}

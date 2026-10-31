@@ -1,0 +1,195 @@
+# Decision Quest - Gradio + Ollama Nimble
+
+A **local, turn-based learning game** for Jev-style decision models, using Ollama's `/v1/systemone` endpoint. Five short adventures per game. Modes: Predict Nimble, Human vs Nimble, Watch Nimble.
+
+## Requirements
+- Ollama **0.35.0+** running locally
+- D3 4B model downloaded with `ollama pull d3:4b`
+- Python 3.10+
+
+## Setup
+
+```bash
+ollama pull d3:4b
+python -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+python app.py
+```
+
+Open **http://127.0.0.1:7860**.
+
+You can override the local server or model using `OLLAMA_URL` and `OLLAMA_MODEL` environment variables.
+The default model is `d3:4b`; use the exact tag shown by `ollama list`.
+Requests allow 300 seconds for model loading and inference. Set `OLLAMA_TIMEOUT`
+to change this timeout in seconds.
+
+## Question languages
+
+Select **English**, **Arabic — العربية**, or **German — Deutsch** under
+**Question language**, then click
+**Start Game**. The selection applies for the entire game. Arabic and German include all
+eight scenario titles, missions, stories, route choices, answer explanations,
+and the decision questions sent to Nimble. Interface labels, buttons, scores,
+and status messages remain in English. Arabic question content displays right to left.
+
+Question content lives in `decision_quest/locales/en.json`, `ar.json`, and `de.json`.
+The English catalog is the default and provides fallback text for missing translations.
+To add another language,
+create a catalog with the same structure and register its code in `LANGUAGES`
+in `decision_quest/localization.py`. Missing content falls back to English;
+route identifiers and answer keys remain shared across languages.
+
+## Code structure
+
+```text
+app.py                       # Entry point: python app.py
+decision_quest/
+    __init__.py
+    config.py                # Environment settings and game constants
+    localization.py          # Question language selection and catalog loading
+    locales/en.json          # English question content and fallback
+    locales/ar.json          # Arabic question translations
+    locales/de.json          # German question translations
+    scenes.py                # Scenario identifiers and fixed answer keys
+    ollama.py                # Model requests and response validation
+    game.py                  # Round lifecycle, scoring, and event handlers
+    presentation.py          # Markdown and probability chart formatting
+    ui.py                    # Gradio layout and event wiring
+test_app.py                  # Game flow regression tests
+```
+
+Run the tests without Ollama:
+
+```bash
+python -m unittest -v test_app
+```
+
+## Architecture
+
+The player uses the app, which loads saved questions and asks a local AI model
+to evaluate the available routes.
+
+```mermaid
+flowchart TD
+    User["Player"] <--> App["Decision Quest"]
+    Content["Questions: English, Arabic, German"] --> App
+    App -->|"Question and route options"| Model["Local AI model"]
+    Model -->|"Decision and probabilities"| App
+```
+
+## What it teaches
+- **choice**: Nimble selects a route from three predefined options and returns option probabilities.
+- **noul**: Nimble estimates whether the left route explicitly presents a hazard.
+- **score**: Nimble scores left-route risk on an ordered 0–2 rubric.
+- **Inference latency**: milliseconds per request, including any cold-start time.
+- **Rule-based validation**: game logic, rather than the AI, defines a safe route and the score.
+
+Game instructions and static rules are entirely deterministic; Nimble does not learn or update weights during play. Probabilities and the model's `confidence` concentration score are **not** calibrated chances of being correct. All UI elements are local to your machine.
+
+Based on [Ollama's official Jev-style decision models announcement](https://ollama.com/blog/ollama-now-supports-jev-style-decision-models) and the [Nimble model reference](https://ollama.com/library/nimble).
+
+## Debugging
+
+Check **Show debugging view** to inspect the model request and response history.
+Each attempt records its timestamp, endpoint, request JSON, HTTP status, response,
+elapsed time, and any error. Failed requests remain visible and can be retried.
+Uncheck the box to hide the panel. History is kept in the current session across
+rounds and cleared by **Start Game**; it is not written to disk.
+
+## How a question becomes a request and response
+
+The locale catalogs contain the authored question content. The trace combines
+that content with the API structure built by Python, results returned by Ollama,
+and debugging metadata recorded by the app. Not every field belongs in `ar.json`.
+The app constructs the entire request before calling the model.
+
+1. **Start a game:** `game.py` saves the selected language and randomly chooses
+   five scenario IDs. `scenes.py` owns the fixed correct route for each scenario.
+2. **Load question content:** `localization.py` loads `en.json`, then overlays
+   the selected catalog, such as `ar.json`. Missing translated fields retain
+   their English values. No model call or automatic translation happens here.
+3. **Show the scenario:** `presentation.py` formats its title, mission, story,
+   and route choices. Buttons, status text, and interface labels stay in English.
+4. **Build the request:** clicking **Ask Nimble** calls `build_payload()` in
+   `ollama.py`. It maps the localized content into the `/v1/systemone` API format
+   and adds the configured model name, currently `d3:4b` by default.
+5. **Run inference:** Ollama returns structured decisions and numeric results.
+   The app records the response; it does not add probabilities or scores to it.
+6. **Score the round:** `game.py` compares the returned route with the fixed
+   answer key. The displayed explanation comes from the locale's `reason` field.
+   Neither that explanation nor the correct answer is sent in the request.
+
+### Game flow
+
+```mermaid
+flowchart TD
+    Start["Choose language and game mode"] --> Scene["Read the scenario"]
+    Scene --> Choice["Choose a route or predict the AI"]
+    Scene -->|"Watch mode"| Ask["Ask the AI"]
+    Choice --> Ask
+    Ask --> Result["See decision, explanation, and score"]
+    Result --> Next{"More rounds?"}
+    Next -->|"Yes"| Scene
+    Next -->|"No"| Finish["Final scores"]
+```
+
+### Where the request fields come from
+
+The Arabic request in `traces.json` uses the `volcano_base` scenario:
+
+| Request field | Source |
+| --- | --- |
+| `model` | `MODEL` in `config.py`, with an optional `OLLAMA_MODEL` override. |
+| `state.goal` | `ar.json` → `scenes.volcano_base.goal`. |
+| `state.situation` | `ar.json` → `scenes.volcano_base.story`; Python renames the field. |
+| `state.paths` | `ar.json` → `scenes.volcano_base.paths`. |
+| `questions.route.instructions` | `ar.json` → `questions.route`. |
+| `questions.route.criteria` | The same route descriptions as `state.paths`, reused by Python. |
+| `questions.left_hazard.instructions` | `ar.json` → `questions.left_hazard`. |
+| `questions.left_risk.instructions` | `ar.json` → `questions.left_risk`. |
+| `questions.left_risk.criteria` | `ar.json` → `questions.risk_criteria`. |
+| Keys such as `state`, `questions`, `instructions`, and `criteria` | API structure written in `ollama.py`. |
+| Types `choice`, `noul`, and `score` | API question types specified in `ollama.py`. |
+
+Identifiers such as `left`, `middle`, `right`, `route`, and `left_hazard` stay
+in English so the API and scoring code can use stable keys. The translated
+direction labels in the catalogs are for display. Your selected route is also
+kept locally for scoring; it is not included in the model request.
+
+### Where the response fields come from
+
+The response is returned by Ollama's decision endpoint. Its field names and
+metadata are API output; its choices and numeric results come from inference.
+This trace contains no newly written story or explanation from the model.
+
+| Response field | Meaning in this trace |
+| --- | --- |
+| `model`, `answers`, and each answer's `type` | Response structure identifying the model and question types. |
+| `answers.route.choice` | The returned route is `left`, one of the supplied route identifiers. |
+| `answers.route.probabilities` | Numeric weights for the three routes; `left` is about 99.9943% in this example. |
+| `answers.left_hazard.noul` | About 0.003405, displayed as a 0.34% probability that the left route has a stated hazard or blockage. |
+| `answers.left_risk.legend` | The three supplied Arabic risk descriptions, indexed as `"0"`, `"1"`, and `"2"` in the response. These descriptions already exist in `questions.risk_criteria`; they are not new model-written text. |
+| `answers.left_risk.probabilities` | Numeric weights for the three risk levels. |
+| `answers.left_risk.score` | About 0.02424 on the 0–2 scale. In this trace it equals `0 × P(0) + 1 × P(1) + 2 × P(2)`. |
+| `confidence` | A returned concentration metric, not a guarantee that the answer is correct. |
+| `usage` | Token accounting returned by the endpoint. This trace reports 663 input tokens and 0 output tokens; inference still produced the structured decision results above. |
+
+The outer trace fields are separate from the response: the app records `round`,
+the UTC `timestamp`, request `method` and `url`, `elapsed_ms`, and any `error`.
+`status_code` comes from the HTTP response. In this example, HTTP 200 and
+`error: null` indicate that the request succeeded, taking about 37.1 seconds.
+
+### Question and result context
+
+Question text is saved in the language catalogs. The AI returns decisions and
+numbers. Check **Show debugging view** to inspect their request and response.
+
+```mermaid
+flowchart TD
+    Text["Saved questions and translations"] --> Request["App builds the request"]
+    Request --> AI["AI evaluates the options"]
+    AI --> Response["Decision, probabilities, and scores"]
+    Request -.-> Debug["Optional debug view"]
+    Response -.-> Debug
+```

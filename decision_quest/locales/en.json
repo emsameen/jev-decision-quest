@@ -1,0 +1,107 @@
+{
+  "directions": {
+    "left": "Left",
+    "middle": "Middle",
+    "right": "Right"
+  },
+  "questions": {
+    "route": "Which one of the three routes is the safest usable route that accomplishes the mission, using only the stated facts?",
+    "left_hazard": "Does the LEFT route explicitly have a hazard or blockage?",
+    "left_risk": "How risky is the LEFT route based only on the description?",
+    "risk_criteria": [
+      "Low risk: clearly safe and usable",
+      "Medium risk: uncertain safety or availability",
+      "High risk: explicitly hazardous or blocked"
+    ]
+  },
+  "scenes": {
+    "flooded_valley": {
+      "title": "🌊 Flooded Valley",
+      "goal": "Cross the valley without entering floodwater or unsafe structures.",
+      "story": "Heavy rain has flooded the lower valley. Three marked routes are ahead.",
+      "paths": {
+        "left": "Fraying rope bridge marked UNSAFE",
+        "middle": "Solid trail on high ground above the flood",
+        "right": "Shallow-looking but fast-moving flooded river"
+      },
+      "reason": "The high-ground trail avoids both the weak bridge and floodwater."
+    },
+    "space_station": {
+      "title": "🛸 Space Station",
+      "goal": "Reach the escape pod using a pressurized, passable corridor.",
+      "story": "An alarm sounds. Station status panels show the following routes.",
+      "paths": {
+        "left": "Depressurized corridor; vacuum alarm active",
+        "middle": "Pressurized corridor leading to the escape pod",
+        "right": "Passage blocked by a jammed emergency hatch"
+      },
+      "reason": "Only the middle corridor is both pressurized and passable."
+    },
+    "forest_evacuation": {
+      "title": "🔥 Forest Evacuation",
+      "goal": "Reach the evacuation point without entering an active hazard.",
+      "story": "Smoke is spreading through the forest. Official route signs are visible.",
+      "paths": {
+        "left": "Path entering an active wildfire zone",
+        "middle": "Trail ending at a river with no crossing",
+        "right": "Open ranger-marked evacuation road to the shelter"
+      },
+      "reason": "The marked evacuation road leads to shelter without a reported obstruction."
+    },
+    "clockwork_castle": {
+      "title": "🔑 Clockwork Castle",
+      "goal": "Retrieve the key needed to open the final gate.",
+      "story": "A sign reads: 'The key is hanging in the room with the brass clock.'",
+      "paths": {
+        "left": "Accessible room with a brass clock and a key hanging on the wall",
+        "middle": "Accessible room with an empty bookshelf",
+        "right": "Locked room with a stone statue"
+      },
+      "reason": "The sign identifies the brass-clock room as the key's location."
+    },
+    "mountain_descent": {
+      "title": "⛰️ Mountain Descent",
+      "goal": "Get to the village safely before dark.",
+      "story": "The mountain weather is changing; your map marks one maintained descent.",
+      "paths": {
+        "left": "Cliffside ledge with an avalanche warning",
+        "middle": "Signed maintained descent trail leading to the village",
+        "right": "Steep unmarked ridge heading away from the village"
+      },
+      "reason": "The maintained trail is the signed route to the destination."
+    },
+    "jungle_crossing": {
+      "title": "🦜 Jungle Crossing",
+      "goal": "Cross the river without taking an unnecessary water risk.",
+      "story": "The river is swift. A notice board confirms the status of each crossing.",
+      "paths": {
+        "left": "Inspected footbridge marked OPEN and SAFE",
+        "middle": "Attempt to swim through strong rapids",
+        "right": "Small raft marked OUT OF SERVICE due to a leak"
+      },
+      "reason": "The inspected and open footbridge is the safe crossing."
+    },
+    "robot_workshop": {
+      "title": "🤖 Robot Workshop",
+      "goal": "Reach the workshop exit while avoiding dangerous machinery.",
+      "story": "Safety displays describe three aisles.",
+      "paths": {
+        "left": "Aisle obstructed by collapsed shelves",
+        "middle": "Aisle beside exposed live electrical wiring",
+        "right": "Clear inspected aisle marked as the exit route"
+      },
+      "reason": "The clear inspected exit aisle avoids the blocked and electrical-hazard routes."
+    },
+    "volcano_base": {
+      "title": "🌋 Volcano Research Base",
+      "goal": "Reach the observation shelter without crossing a danger zone.",
+      "story": "A volcanic activity bulletin lists route conditions.",
+      "paths": {
+        "left": "Protected tunnel directly to the observation shelter",
+        "middle": "Trail across an active lava-flow exclusion zone",
+        "right": "Unstable slope with recent rockfalls"
+      },
+      "reason": "The protected tunnel reaches the shelter without the stated hazards."
+    }
+  }
+}
