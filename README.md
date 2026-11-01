@@ -2,6 +2,22 @@
 
 A **local, turn-based learning game** for Jev-style decision models, using Ollama's `/v1/systemone` endpoint. In each of five short adventures, choose a route before running the configured model, then compare your choice and the model's decision against the fixed game answer.
 
+![Jev Decision Quest poster](images/poster.png)
+
+> **Illustrative poster:** this artwork is promotional and is not a screenshot of the current app. The screenshots below show the actual interface.
+
+## Screenshots
+
+### Game view
+
+![Jev Decision Quest game interface](images/game-view.png)
+
+### Decision breakdown and explanation
+
+![Model decision breakdown and fixed-rule explanation](images/reasoning-view.png)
+
+The explanation shown is authored from fixed game rules. The model returns structured decisions and probabilities, not natural-language reasoning.
+
 ## Requirements
 
 - Ollama **0.35.0+** running locally
