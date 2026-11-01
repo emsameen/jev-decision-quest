@@ -63,18 +63,19 @@ route identifiers and answer keys remain shared across languages.
 app.py                       # Entry point: python app.py
 decision_quest/
     __init__.py
-    config.py                # Environment settings and game constants
-    localization.py          # Question language selection and catalog loading
+    config.py                # AppSettings and shared constants
+    models.py                # Scenario, SceneRule, and GameSession domain objects
+    localization.py          # LocalizationCatalog and English fallback
     locales/en.json          # English question content and fallback
     locales/ar.json          # Arabic question translations
     locales/de.json          # German question translations
-    scenes.py                # Scenario identifiers and fixed answer keys
-    ollama.py                # Model requests and response validation
-    game.py                  # Round lifecycle, scoring, and event handlers
-    presentation.py          # Markdown and probability chart formatting
-    ui.py                    # Gradio layout and event wiring
+    scenes.py                # SceneRepository and fixed answer keys
+    ollama.py                # OllamaClient, response validation, and ModelError
+    game.py                  # GameController event handlers
+    presentation.py          # GamePresenter Markdown and probability charts
+    ui.py                    # DecisionQuestApp composition, layout, and launch
     styles.css               # Poster-inspired colors, cards, and responsive layout
-test_app.py                  # Game flow regression tests
+test_app.py                  # Domain, client, localization, and Gradio flow tests
 ```
 
 Run the tests without Ollama:
@@ -85,16 +86,42 @@ python -m unittest -v test_app
 
 ## Architecture
 
-The player uses the app, which loads saved questions and asks a local AI model
-to evaluate the available routes.
+`DecisionQuestApp` creates the services and builds the Gradio UI.
+`GameController` coordinates UI actions with `OllamaClient`, `SceneRepository`,
+and `GamePresenter`. `LocalizationCatalog` loads and caches question text for
+that application. `AppSettings.from_env()` reads the existing environment
+overrides when an application is created.
+
+Each browser session owns a `GameSession` stored in `gr.State`. It tracks the
+round, scores, language, and debug history, and enforces scoring and round
+transitions. The shared controller holds no player state. `Scenario` and
+`SceneRule` keep localized question content and fixed answers explicit.
 
 ```mermaid
 flowchart TD
-    User["Player"] <--> App["Decision Quest"]
-    Content["Questions: English, Arabic, German"] --> App
-    App -->|"Question and route options"| Model["Local AI model"]
-    Model -->|"Decision and probabilities"| App
+    UI["DecisionQuestApp · Gradio UI"] --> Controller["GameController"]
+    Controller --> Session["GameSession · per browser session"]
+    Controller --> Scenes["SceneRepository"]
+    Controller --> Presenter["GamePresenter"]
+    Controller --> Client["OllamaClient"]
+    Scenes --> Catalog["LocalizationCatalog · English, Arabic, German"]
+    Client -->|"Question and route options"| Model["Local Ollama model"]
+    Model -->|"Decision and probabilities"| Client
 ```
+
+Start the app with `python app.py`, or configure it in Python:
+
+```python
+from decision_quest.config import AppSettings
+from decision_quest.ui import DecisionQuestApp
+
+settings = AppSettings.from_env()
+app = DecisionQuestApp(settings=settings)
+app.launch()
+```
+
+`create_app()` remains available as a convenience factory returning Gradio
+`Blocks`. Use `DecisionQuestApp.launch()` to launch with the bundled stylesheet.
 
 ## What it teaches
 
@@ -124,21 +151,24 @@ The locale catalogs contain the authored question content. The app combines
 that content with the API structure built by Python to construct the request
 before calling the model.
 
-1. **Start a game:** `game.py` saves the selected language and randomly chooses
-   five scenario IDs. `scenes.py` owns the fixed correct route for each scenario.
-2. **Load question content:** `localization.py` loads `en.json`, then overlays
+1. **Start a game:** `GameController.start_game()` creates a `GameSession` with
+   the selected language and five randomly chosen scenarios. `SceneRepository`
+   resolves each scenario using the fixed answer keys in `scenes.py`.
+2. **Load question content:** `LocalizationCatalog` loads `en.json`, then overlays
    the selected catalog, such as `ar.json`. Missing translated fields retain
    their English values. No model call or automatic translation happens here.
-3. **Show the scenario:** `presentation.py` formats its title, mission, story,
+3. **Show the scenario:** `GamePresenter` formats its title, mission, story,
    and route choices. Buttons, status text, and interface labels stay in English.
-4. **Build the request:** clicking **Run decision** calls `build_payload()` in
-   `ollama.py`. It maps the localized content into the `/v1/systemone` API format
-   and adds the configured model name, currently `d3:4b` by default.
+4. **Build the request:** clicking **Run decision** calls
+   `OllamaClient.build_payload()`. It maps the localized content into the
+   `/v1/systemone` API format and adds the configured model name, currently
+   `d3:4b` by default.
 5. **Run inference:** Ollama returns structured decisions and numeric results.
    The app records the response; it does not add probabilities or scores to it.
-6. **Score the round:** `game.py` compares the returned route with the fixed
-   answer key. The displayed explanation comes from the locale's `reason` field.
-   Neither that explanation nor the correct answer is sent in the request.
+6. **Score the round:** `GameSession.score_round()` compares both choices with
+   the fixed answer key and prevents scoring the same round twice. The displayed
+   explanation comes from the locale's `reason` field. Neither that explanation
+   nor the correct answer is sent in the request.
 
 ### Game flow
 

@@ -1,8 +1,9 @@
 """Launch Decision Quest with ``python app.py``."""
 
-from decision_quest.ui import APP_CSS, create_app
+from decision_quest.ui import DecisionQuestApp
 
-demo = create_app()
+app = DecisionQuestApp()
+demo = app.build()
 
 if __name__ == "__main__":
-    demo.launch(server_name="127.0.0.1", server_port=7860, css=APP_CSS)
+    app.launch()

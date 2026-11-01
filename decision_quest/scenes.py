@@ -1,26 +1,32 @@
-"""Scenario identifiers and fixed answer keys, independent of translations."""
+"""Scenario rules and their localized content."""
 
-from typing import Any
-
-from .localization import localized_scene
+from .localization import LocalizationCatalog
+from .models import GameSession, Scenario, SceneRule
 
 # Correct routes belong to game rules, never to translations or model output.
-SCENE_RULES = [
-    {'id': 'flooded_valley', 'best': 'middle'},
-    {'id': 'space_station', 'best': 'middle'},
-    {'id': 'forest_evacuation', 'best': 'right'},
-    {'id': 'clockwork_castle', 'best': 'left'},
-    {'id': 'mountain_descent', 'best': 'middle'},
-    {'id': 'jungle_crossing', 'best': 'left'},
-    {'id': 'robot_workshop', 'best': 'right'},
-    {'id': 'volcano_base', 'best': 'left'},
-]
-
-# Keep English scenarios available to callers; their text comes from en.json.
-SCENES = [localized_scene(rule, "en") for rule in SCENE_RULES]
+SCENE_RULES = (
+    SceneRule("flooded_valley", "middle"),
+    SceneRule("space_station", "middle"),
+    SceneRule("forest_evacuation", "right"),
+    SceneRule("clockwork_castle", "left"),
+    SceneRule("mountain_descent", "middle"),
+    SceneRule("jungle_crossing", "left"),
+    SceneRule("robot_workshop", "right"),
+    SceneRule("volcano_base", "left"),
+)
 
 
-def current_scene(game: dict[str, Any]) -> dict[str, Any]:
-    return localized_scene(
-        SCENE_RULES[game["order"][game["round"]]], game.get("language", "en")
-    )
+class SceneRepository:
+    """Resolve session positions into scenarios using one question catalog."""
+
+    def __init__(self, localization: LocalizationCatalog | None = None):
+        self.localization = localization if localization is not None else LocalizationCatalog()
+
+    def __len__(self) -> int:
+        return len(SCENE_RULES)
+
+    def get(self, index: int, language: str = "en") -> Scenario:
+        return self.localization.localize(SCENE_RULES[index], language)
+
+    def current(self, game: GameSession) -> Scenario:
+        return self.get(game.order[game.round], game.language)
