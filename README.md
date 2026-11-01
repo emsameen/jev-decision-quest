@@ -120,10 +120,9 @@ rounds and cleared by **Start Game**; it is not written to disk.
 
 ## How a question becomes a request and response
 
-The locale catalogs contain the authored question content. The trace combines
-that content with the API structure built by Python, results returned by Ollama,
-and debugging metadata recorded by the app. Not every field belongs in `ar.json`.
-The app constructs the entire request before calling the model.
+The locale catalogs contain the authored question content. The app combines
+that content with the API structure built by Python to construct the request
+before calling the model.
 
 1. **Start a game:** `game.py` saves the selected language and randomly chooses
    five scenario IDs. `scenes.py` owns the fixed correct route for each scenario.
@@ -153,52 +152,6 @@ flowchart TD
     Next -->|"Yes"| Scene
     Next -->|"No"| Finish["Final scores"]
 ```
-
-### Where the request fields come from
-
-The Arabic request in `traces.json` uses the `volcano_base` scenario:
-
-| Request field | Source |
-| --- | --- |
-| `model` | `MODEL` in `config.py`, with an optional `OLLAMA_MODEL` override. |
-| `state.goal` | `ar.json` → `scenes.volcano_base.goal`. |
-| `state.situation` | `ar.json` → `scenes.volcano_base.story`; Python renames the field. |
-| `state.paths` | `ar.json` → `scenes.volcano_base.paths`. |
-| `questions.route.instructions` | `ar.json` → `questions.route`. |
-| `questions.route.criteria` | The same route descriptions as `state.paths`, reused by Python. |
-| `questions.left_hazard.instructions` | `ar.json` → `questions.left_hazard`. |
-| `questions.left_risk.instructions` | `ar.json` → `questions.left_risk`. |
-| `questions.left_risk.criteria` | `ar.json` → `questions.risk_criteria`. |
-| Keys such as `state`, `questions`, `instructions`, and `criteria` | API structure written in `ollama.py`. |
-| Types `choice`, `noul`, and `score` | API question types specified in `ollama.py`. |
-
-Identifiers such as `left`, `middle`, `right`, `route`, and `left_hazard` stay
-in English so the API and scoring code can use stable keys. The translated
-direction labels in the catalogs are for display. Your selected route is also
-kept locally for scoring; it is not included in the model request.
-
-### Where the response fields come from
-
-The response is returned by Ollama's decision endpoint. Its field names and
-metadata are API output; its choices and numeric results come from inference.
-This trace contains no newly written story or explanation from the model.
-
-| Response field | Meaning in this trace |
-| --- | --- |
-| `model`, `answers`, and each answer's `type` | Response structure identifying the model and question types. |
-| `answers.route.choice` | The returned route is `left`, one of the supplied route identifiers. |
-| `answers.route.probabilities` | Numeric weights for the three routes; `left` is about 99.9943% in this example. |
-| `answers.left_hazard.noul` | About 0.003405, displayed as a 0.34% probability that the left route has a stated hazard or blockage. |
-| `answers.left_risk.legend` | The three supplied Arabic risk descriptions, indexed as `"0"`, `"1"`, and `"2"` in the response. These descriptions already exist in `questions.risk_criteria`; they are not new model-written text. |
-| `answers.left_risk.probabilities` | Numeric weights for the three risk levels. |
-| `answers.left_risk.score` | About 0.02424 on the 0–2 scale. In this trace it equals `0 × P(0) + 1 × P(1) + 2 × P(2)`. |
-| `confidence` | A returned concentration metric, not a guarantee that the answer is correct. |
-| `usage` | Token accounting returned by the endpoint. This trace reports 663 input tokens and 0 output tokens; inference still produced the structured decision results above. |
-
-The outer trace fields are separate from the response: the app records `round`,
-the UTC `timestamp`, request `method` and `url`, `elapsed_ms`, and any `error`.
-`status_code` comes from the HTTP response. In this example, HTTP 200 and
-`error: null` indicate that the request succeeded, taking about 37.1 seconds.
 
 ### Question and result context
 
