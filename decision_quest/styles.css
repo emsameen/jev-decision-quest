@@ -1,0 +1,154 @@
+/* Keep the adventure palette consistent in light and dark browser modes.
+   Include the Gradio container so portalled dropdown menus inherit it too. */
+.gradio-container:has(#quest-app),
+#quest-app {
+  --body-background-fill: #061b27;
+  --body-text-color: #e9f5f8;
+  --body-text-color-subdued: #b8d3db;
+  --background-fill-primary: #0b2937;
+  --background-fill-secondary: #103542;
+  --block-background-fill: #0b2937;
+  --block-border-color: #285361;
+  --block-label-text-color: #b8d3db;
+  --block-label-background-fill: #0b2937;
+  --block-info-text-color: #b8d3db;
+  --block-title-text-color: #e9f5f8;
+  --accordion-text-color: #e9f5f8;
+  --input-background-fill: #082330;
+  --input-background-fill-focus: #103542;
+  --input-border-color: #3a6976;
+  --input-border-color-focus: #71e2e9;
+  --input-placeholder-color: #aac8d2;
+  --input-text-color: #e9f5f8;
+  --checkbox-label-background-fill: #0a2734;
+  --checkbox-label-background-fill-hover: #143f4c;
+  --checkbox-label-background-fill-focus: #143f4c;
+  --checkbox-label-background-fill-selected: #164653;
+  --checkbox-label-text-color: #e9f5f8;
+  --checkbox-label-text-color-selected: #e9f5f8;
+  --checkbox-label-border-color: #3a6976;
+  --checkbox-label-border-color-selected: #71e2e9;
+  --checkbox-background-color: #082330;
+  --checkbox-background-color-hover: #143f4c;
+  --checkbox-background-color-focus: #143f4c;
+  --checkbox-background-color-selected: #71e2e9;
+  --checkbox-border-color: #709aa7;
+  --checkbox-border-color-hover: #71e2e9;
+  --checkbox-border-color-focus: #71e2e9;
+  --checkbox-border-color-selected: #71e2e9;
+  --button-primary-background-fill: #ffb74d;
+  --button-primary-background-fill-hover: #ffcb7c;
+  --button-primary-text-color: #102632;
+  --button-primary-text-color-hover: #102632;
+  --button-primary-border-color: #ffc977;
+  --button-primary-border-color-hover: #ffc977;
+  --button-secondary-background-fill: #153f4c;
+  --button-secondary-background-fill-hover: #205363;
+  --button-secondary-text-color: #e9f5f8;
+  --button-secondary-text-color-hover: #e9f5f8;
+  --button-secondary-border-color: #3a6976;
+  --button-secondary-border-color-hover: #71e2e9;
+  --border-color-primary: #285361;
+  --border-color-accent: #5bd8e9;
+  --color-accent: #5bd8e9;
+  --link-text-color: #78e5ef;
+  --link-text-color-hover: #b6f4f8;
+  --link-text-color-visited: #a9d5fa;
+  color: #e9f5f8;
+  color-scheme: dark;
+  background: #061b27;
+}
+#quest-app {
+  max-width: 1280px;
+  margin: auto;
+  padding: 24px;
+  background: radial-gradient(ellipse at top right, #124957 0, #061b27 65%);
+}
+#quest-app .prose, #quest-app .prose h1, #quest-app .prose h2,
+#quest-app .prose h3, #quest-app .prose h4, #quest-app .prose strong,
+#quest-app .prose p, #quest-app .prose li { color: #e9f5f8; }
+#quest-app .prose { line-height: 1.7; }
+#quest-app .prose code { background: #163d4b; color: #9cebf0; }
+.quest-banner {
+  border: 1px solid #397c87;
+  border-radius: 22px;
+  padding: 38px;
+  background-size: cover;
+  background-position: center 43%;
+  overflow: hidden;
+  box-shadow: 0 12px 32px #0003;
+}
+.quest-eyebrow { color: #84e7ed; font-size: 12px; font-weight: 700; letter-spacing: .16em; }
+.quest-banner h1 { margin: 12px 0; color: #fff; font-size: clamp(30px, 4vw, 52px); font-weight: 800; line-height: 1.15; }
+.quest-banner h1 span { color: #ffb74d; }
+.quest-banner p { margin: 0 0 8px; color: #a6edf2; font-size: 24px; font-weight: 600; }
+.quest-intro { color: #d5e9ed; max-width: 450px; line-height: 1.6; }
+#quest-toolbar { align-items: end; padding: 8px 0; }
+#quest-scenario, #quest-decisions {
+  background: linear-gradient(145deg, #103442, #092431);
+  border: 1px solid #2d626f;
+  border-radius: 20px;
+  padding: 24px;
+  min-width: min(100%, 340px);
+}
+#quest-scenario { border-top: 3px solid #ffb74d; }
+#quest-decisions { border-top: 3px solid #64dce8; }
+#start-game, #run-decision, #next-round {
+  min-height: 52px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  transition: background .15s, box-shadow .15s;
+}
+#start-game, #run-decision { background: #ffb74d; color: #102632; border: 1px solid #ffc977; }
+#start-game:hover, #run-decision:hover { background: #ffcb7c; box-shadow: 0 0 18px #ffb74d26; }
+#quest-app button:disabled { opacity: 1; cursor: not-allowed; box-shadow: none; transition: none; }
+#start-game:disabled, #run-decision:disabled { background: #38505a; border-color: #52707b; color: #d0dfe4; }
+#next-round:disabled { background: #15313e; border-color: #3a5662; color: #aec5ce; }
+#route-choice { background: transparent; border: 0; padding: 0; }
+#route-choice .wrap { display: flex; flex-direction: column; gap: 10px; }
+#route-choice label {
+  width: 100%; box-sizing: border-box; min-height: 64px; padding: 16px;
+  border: 1px solid #3a6976; border-radius: 12px;
+  background: #0a2734; color: #e9f5f8; line-height: 1.6;
+  white-space: normal; overflow-wrap: anywhere;
+}
+#route-choice label:has(input:not(:disabled)):hover { border-color: #8be6ee; background: #143f4c; }
+#route-choice label:has(input:checked) { border: 2px solid #71e2e9; background: #164653; box-shadow: 0 0 0 3px #71e2e914; }
+#quest-app input { accent-color: #71e2e9; }
+#quest-app button:focus-visible, #route-choice label:focus-within {
+  outline: 3px solid #ffcb7c; outline-offset: 3px;
+}
+#quest-status { background: #08222f; border: 1px solid #285361; border-radius: 12px; padding: 16px; }
+.quest-progress { display: grid; gap: 8px; margin: 0 0 18px; color: #b8d3db; font-size: 13px; }
+.quest-progress progress { width: 100%; height: 8px; border: 0; border-radius: 8px; overflow: hidden; background: #173e4b; accent-color: #ffb74d; }
+.quest-progress progress::-webkit-progress-bar { background: #173e4b; }
+.quest-progress progress::-webkit-progress-value { background: #ffb74d; border-radius: 8px; }
+.quest-progress progress::-moz-progress-bar { background: #ffb74d; }
+.quest-empty { padding: 28px 12px; text-align: center; color: #b8d3db; line-height: 1.7; }
+.quest-empty > span { display: block; color: #71e2e9; font-size: 42px; }
+.quest-empty h3 { color: #e9f5f8; }
+#quest-footer { text-align: center; padding: 12px; font-size: 12px; }
+/* JSON has its own syntax palette rather than the regular Gradio text tokens. */
+#quest-app .json-node {
+  --text-color: #e9f5f8;
+  --key-color: #8ee8f0;
+  --string-color: #f8c98c;
+  --number-color: #94e6c9;
+  --bracket-color: #bddae2;
+  --square-bracket-color: #d4b9f6;
+  --punctuation-color: #bddae2;
+  --line-number-color: #aac8d2;
+  --separator-color: #3a6976;
+}
+@media (max-width: 700px) {
+  #quest-app { padding: 12px; }
+  .quest-banner { padding: 24px 20px; }
+  .quest-banner p { font-size: 20px; }
+  #quest-scenario, #quest-decisions { padding: 18px; }
+}
+@media (prefers-reduced-motion: reduce) { #quest-app * { transition: none !important; } }
+#route-choice label::before { font-size: 20px; color: #84e7ed; margin-inline-end: 6px; }
+#route-choice label:nth-of-type(1)::before { content: "↖"; }
+#route-choice label:nth-of-type(2)::before { content: "↑"; }
+#route-choice label:nth-of-type(3)::before { content: "↗"; }

@@ -73,6 +73,7 @@ decision_quest/
     game.py                  # Round lifecycle, scoring, and event handlers
     presentation.py          # Markdown and probability chart formatting
     ui.py                    # Gradio layout and event wiring
+    styles.css               # Poster-inspired colors, cards, and responsive layout
 test_app.py                  # Game flow regression tests
 ```
 

@@ -11,13 +11,18 @@ from .localization import direction_label
 
 def scene_markdown(game: dict[str, Any]) -> str:
     scene = current_scene(game)
+    completed = game["round"] + int(game.get("resolved", False))
+    progress = (
+        f'<div class="quest-progress"><span>Adventure progress · {completed} / {ROUNDS} complete</span>'
+        f'<progress value="{completed}" max="{ROUNDS}" aria-label="Completed rounds"></progress></div>\n\n'
+    )
     if scene["language"] == "ar":
         paths = "".join(
             f"<li><b>{direction_label(d, 'ar')}</b>: {html.escape(scene['paths'][d])}</li>"
             for d in DIRECTIONS
         )
         return (
-            f"### Round {game['round'] + 1} / {ROUNDS}\n\n"
+            progress + f"### Round {game['round'] + 1} / {ROUNDS}\n\n"
             f'<div lang="ar" dir="rtl">'
             f"<h3>{html.escape(scene['title'])}</h3>"
             f"<p>{html.escape(scene['goal'])}</p>"
@@ -27,7 +32,7 @@ def scene_markdown(game: dict[str, Any]) -> str:
         f"- **{direction_label(direction, scene['language'])}**: {scene['paths'][direction]}" for direction in DIRECTIONS
     )
     return (
-        f"### Round {game['round'] + 1} / {ROUNDS} · {scene['title']}\n\n"
+        progress + f"### Round {game['round'] + 1} / {ROUNDS} · {scene['title']}\n\n"
         f"**Mission:** {scene['goal']}\n\n"
         f"{scene['story']}\n\n{paths}"
     )
@@ -129,7 +134,7 @@ def _probability_row(label: str, probability: Any, color: str) -> str:
         '<div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;'
         'align-items:center;margin:9px 0">'
         f'<span>{html.escape(label)}</span><strong>{percent_text}</strong>'
-        '<div style="grid-column:1/-1;height:8px;background:#e5e7eb;overflow:hidden">'
+        '<div style="grid-column:1/-1;height:8px;background:#173e4b;border-radius:8px;overflow:hidden">'
         f'<div style="width:{width:.2f}%;height:100%;background:{color}"></div>'
         '</div></div>'
     )
@@ -142,7 +147,7 @@ def decision_breakdown_html(
     route_probabilities = route.get("probabilities", {})
     route_rows = []
     for d in DIRECTIONS:
-        color = "#0f766e" if d == selected else "#64748b"
+        color = "#54dfbc" if d == selected else "#5ac6e2"
         route_rows.append(
             _probability_row(
                 direction_label(d, language), route_probabilities.get(d), color
@@ -154,9 +159,9 @@ def decision_breakdown_html(
         f" · concentration {route_confidence:.2f}" if route_confidence is not None else ""
     )
     route_section = (
-        '<section style="padding:12px 0;border-bottom:1px solid #d1d5db">'
+        '<section style="padding:12px 0;border-bottom:1px solid #285361">'
         '<h4 style="margin:0 0 4px">choice · Route selection</h4>'
-        f'<p style="margin:0 0 8px;color:#475569">Selected: <strong>{selected_label}</strong>'
+        f'<p style="margin:0 0 8px;color:#b8d3db">Selected: <strong>{selected_label}</strong>'
         f'{concentration}</p>{"".join(route_rows)}</section>'
     )
 
@@ -164,18 +169,18 @@ def decision_breakdown_html(
     hazard_probability = _number(hazard.get("noul"))
     if hazard_probability is None:
         hazard_section = (
-            '<section style="padding:12px 0;border-bottom:1px solid #d1d5db">'
+            '<section style="padding:12px 0;border-bottom:1px solid #285361">'
             '<h4 style="margin:0 0 4px">noul · Hazard check</h4>'
-            '<p style="margin:0;color:#475569">No hazard estimate returned.</p></section>'
+            '<p style="margin:0;color:#b8d3db">No hazard estimate returned.</p></section>'
         )
     else:
         hazard_probability = max(0.0, min(1.0, hazard_probability))
         hazard_section = (
-            '<section style="padding:12px 0;border-bottom:1px solid #d1d5db">'
+            '<section style="padding:12px 0;border-bottom:1px solid #285361">'
             '<h4 style="margin:0 0 4px">noul · Left-route hazard</h4>'
-            '<p style="margin:0 0 8px;color:#475569">Probability that the description states a hazard</p>'
-            f'{_probability_row("Yes", hazard_probability, "#c2413b")}'
-            f'{_probability_row("No", 1 - hazard_probability, "#0f766e")}'
+            '<p style="margin:0 0 8px;color:#b8d3db">Probability that the description states a hazard</p>'
+            f'{_probability_row("Yes", hazard_probability, "#ff827d")}'
+            f'{_probability_row("No", 1 - hazard_probability, "#54dfbc")}'
             '</section>'
         )
 
@@ -186,18 +191,18 @@ def decision_breakdown_html(
     for level in range(3):
         label = legend.get(str(level), legend.get(level, f"Level {level}"))
         probability = risk_probabilities.get(str(level), risk_probabilities.get(level))
-        risk_rows.append(_probability_row(f"{level} · {label}", probability, "#d97706"))
+        risk_rows.append(_probability_row(f"{level} · {label}", probability, "#ffb74d"))
     expected_score = _number(risk.get("score"))
     score_text = f"{expected_score:.2f} / 2" if expected_score is not None else "Not returned"
     risk_section = (
         '<section style="padding:12px 0">'
         '<h4 style="margin:0 0 4px">score · Left-route risk rubric</h4>'
-        f'<p style="margin:0 0 8px;color:#475569">Expected score: <strong>{score_text}</strong></p>'
+        f'<p style="margin:0 0 8px;color:#b8d3db">Expected score: <strong>{score_text}</strong></p>'
         f'{"".join(risk_rows)}</section>'
     )
     return (
         '<div style="padding:4px 2px">'
         f'{route_section}{hazard_section}{risk_section}'
-        '<p style="margin:8px 0 0;color:#64748b;font-size:12px">'
+        '<p style="margin:8px 0 0;color:#a1c0cb;font-size:12px">'
         'Probabilities are model estimates, not calibrated accuracy.</p></div>'
     )
