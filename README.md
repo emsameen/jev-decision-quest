@@ -125,6 +125,8 @@ app.launch()
 
 ## What it teaches
 
+Read the [three-round learning walkthrough](traces/20261101T204051Z/conversation.md) for player choices, model outputs, a decision-flow diagram, and links to the original JSON traces.
+
 - **choice**: The model selects a route from three predefined options and returns option probabilities.
 - **noul**: The model estimates whether the left route explicitly presents a hazard.
 - **score**: The model estimates left-route risk on an ordered 0–2 rubric and returns probabilities for each level.

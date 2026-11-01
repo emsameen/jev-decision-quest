@@ -1,0 +1,95 @@
+{
+  "round": 1,
+  "player_choice": "right",
+  "player_choice_label": "Right",
+  "matched_model": true,
+  "reasoning": {
+    "correct_route": "right",
+    "correct_route_label": "Right",
+    "explanation": "The marked evacuation road leads to shelter without a reported obstruction.",
+    "source": "fixed game rules"
+  },
+  "timestamp": "2026-11-01T20:40:59.343585+00:00",
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:11434/v1/systemone",
+    "json": {
+      "model": "d3:4b",
+      "state": {
+        "goal": "Reach the evacuation point without entering an active hazard.",
+        "situation": "Smoke is spreading through the forest. Official route signs are visible.",
+        "paths": {
+          "left": "Path entering an active wildfire zone",
+          "middle": "Trail ending at a river with no crossing",
+          "right": "Open ranger-marked evacuation road to the shelter"
+        }
+      },
+      "questions": {
+        "route": {
+          "type": "choice",
+          "instructions": "Which one of the three routes is the safest usable route that accomplishes the mission, using only the stated facts?",
+          "criteria": {
+            "left": "Path entering an active wildfire zone",
+            "middle": "Trail ending at a river with no crossing",
+            "right": "Open ranger-marked evacuation road to the shelter"
+          }
+        },
+        "left_hazard": {
+          "type": "noul",
+          "instructions": "Does the LEFT route explicitly have a hazard or blockage?"
+        },
+        "left_risk": {
+          "type": "score",
+          "instructions": "How risky is the LEFT route based only on the description?",
+          "criteria": [
+            "Low risk: clearly safe and usable",
+            "Medium risk: uncertain safety or availability",
+            "High risk: explicitly hazardous or blocked"
+          ]
+        }
+      }
+    }
+  },
+  "status_code": 200,
+  "response": {
+    "model": "d3:4b",
+    "answers": {
+      "route": {
+        "type": "choice",
+        "choice": "right",
+        "probabilities": {
+          "left": 3.907499012399598e-05,
+          "middle": 0.00110914848934342,
+          "right": 0.9988517765205326
+        },
+        "confidence": 0.9917250124392744
+      },
+      "left_hazard": {
+        "type": "noul",
+        "noul": 0.9910421881191537
+      },
+      "left_risk": {
+        "type": "score",
+        "score": 1.9940902926582602,
+        "legend": {
+          "0": "Low risk: clearly safe and usable",
+          "1": "Medium risk: uncertain safety or availability",
+          "2": "High risk: explicitly hazardous or blocked"
+        },
+        "probabilities": {
+          "0": 0.0001377282289811229,
+          "1": 0.005634250883777577,
+          "2": 0.9942280208872413
+        },
+        "confidence": 0.9670867543549734
+      }
+    },
+    "usage": {
+      "input_tokens": 562,
+      "output_tokens": 0
+    }
+  },
+  "error": null,
+  "elapsed_ms": 39770.9,
+  "model_choice": "right"
+}

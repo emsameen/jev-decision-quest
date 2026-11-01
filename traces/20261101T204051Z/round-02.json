@@ -1,0 +1,95 @@
+{
+  "round": 2,
+  "player_choice": "left",
+  "player_choice_label": "Left",
+  "matched_model": true,
+  "reasoning": {
+    "correct_route": "left",
+    "correct_route_label": "Left",
+    "explanation": "The protected tunnel reaches the shelter without the stated hazards.",
+    "source": "fixed game rules"
+  },
+  "timestamp": "2026-11-01T20:41:46.746554+00:00",
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:11434/v1/systemone",
+    "json": {
+      "model": "d3:4b",
+      "state": {
+        "goal": "Reach the observation shelter without crossing a danger zone.",
+        "situation": "A volcanic activity bulletin lists route conditions.",
+        "paths": {
+          "left": "Protected tunnel directly to the observation shelter",
+          "middle": "Trail across an active lava-flow exclusion zone",
+          "right": "Unstable slope with recent rockfalls"
+        }
+      },
+      "questions": {
+        "route": {
+          "type": "choice",
+          "instructions": "Which one of the three routes is the safest usable route that accomplishes the mission, using only the stated facts?",
+          "criteria": {
+            "left": "Protected tunnel directly to the observation shelter",
+            "middle": "Trail across an active lava-flow exclusion zone",
+            "right": "Unstable slope with recent rockfalls"
+          }
+        },
+        "left_hazard": {
+          "type": "noul",
+          "instructions": "Does the LEFT route explicitly have a hazard or blockage?"
+        },
+        "left_risk": {
+          "type": "score",
+          "instructions": "How risky is the LEFT route based only on the description?",
+          "criteria": [
+            "Low risk: clearly safe and usable",
+            "Medium risk: uncertain safety or availability",
+            "High risk: explicitly hazardous or blocked"
+          ]
+        }
+      }
+    }
+  },
+  "status_code": 200,
+  "response": {
+    "model": "d3:4b",
+    "answers": {
+      "route": {
+        "type": "choice",
+        "choice": "left",
+        "probabilities": {
+          "left": 0.9999466083097536,
+          "middle": 3.9076749234382716e-05,
+          "right": 1.4314941012060278e-05
+        },
+        "confidence": 0.9994450358694696
+      },
+      "left_hazard": {
+        "type": "noul",
+        "noul": 0.0003728612022180671
+      },
+      "left_risk": {
+        "type": "score",
+        "score": 0.006003501110533259,
+        "legend": {
+          "0": "Low risk: clearly safe and usable",
+          "1": "Medium risk: uncertain safety or availability",
+          "2": "High risk: explicitly hazardous or blocked"
+        },
+        "probabilities": {
+          "0": 0.9941875636324058,
+          "1": 0.0056213716246551835,
+          "2": 0.00019106474293903778
+        },
+        "confidence": 0.966724461802592
+      }
+    },
+    "usage": {
+      "input_tokens": 543,
+      "output_tokens": 0
+    }
+  },
+  "error": null,
+  "elapsed_ms": 20216.1,
+  "model_choice": "left"
+}

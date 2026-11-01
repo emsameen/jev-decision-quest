@@ -1,0 +1,95 @@
+{
+  "round": 3,
+  "player_choice": "middle",
+  "player_choice_label": "Middle",
+  "matched_model": true,
+  "reasoning": {
+    "correct_route": "middle",
+    "correct_route_label": "Middle",
+    "explanation": "Only the middle corridor is both pressurized and passable.",
+    "source": "fixed game rules"
+  },
+  "timestamp": "2026-11-01T20:42:26.115067+00:00",
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:11434/v1/systemone",
+    "json": {
+      "model": "d3:4b",
+      "state": {
+        "goal": "Reach the escape pod using a pressurized, passable corridor.",
+        "situation": "An alarm sounds. Station status panels show the following routes.",
+        "paths": {
+          "left": "Depressurized corridor; vacuum alarm active",
+          "middle": "Pressurized corridor leading to the escape pod",
+          "right": "Passage blocked by a jammed emergency hatch"
+        }
+      },
+      "questions": {
+        "route": {
+          "type": "choice",
+          "instructions": "Which one of the three routes is the safest usable route that accomplishes the mission, using only the stated facts?",
+          "criteria": {
+            "left": "Depressurized corridor; vacuum alarm active",
+            "middle": "Pressurized corridor leading to the escape pod",
+            "right": "Passage blocked by a jammed emergency hatch"
+          }
+        },
+        "left_hazard": {
+          "type": "noul",
+          "instructions": "Does the LEFT route explicitly have a hazard or blockage?"
+        },
+        "left_risk": {
+          "type": "score",
+          "instructions": "How risky is the LEFT route based only on the description?",
+          "criteria": [
+            "Low risk: clearly safe and usable",
+            "Medium risk: uncertain safety or availability",
+            "High risk: explicitly hazardous or blocked"
+          ]
+        }
+      }
+    }
+  },
+  "status_code": 200,
+  "response": {
+    "model": "d3:4b",
+    "answers": {
+      "route": {
+        "type": "choice",
+        "choice": "middle",
+        "probabilities": {
+          "left": 1.4621768721056595e-05,
+          "middle": 0.9999702484599918,
+          "right": 1.5129771287200113e-05
+        },
+        "confidence": 0.9996718967707091
+      },
+      "left_hazard": {
+        "type": "noul",
+        "noul": 0.9796164458914262
+      },
+      "left_risk": {
+        "type": "score",
+        "score": 1.9439762505524822,
+        "legend": {
+          "0": "Low risk: clearly safe and usable",
+          "1": "Medium risk: uncertain safety or availability",
+          "2": "High risk: explicitly hazardous or blocked"
+        },
+        "probabilities": {
+          "0": 0.0006619702660429808,
+          "1": 0.054699808915431636,
+          "2": 0.9446382208185253
+        },
+        "confidence": 0.8019338147953716
+      }
+    },
+    "usage": {
+      "input_tokens": 586,
+      "output_tokens": 0
+    }
+  },
+  "error": null,
+  "elapsed_ms": 19470.1,
+  "model_choice": "middle"
+}
